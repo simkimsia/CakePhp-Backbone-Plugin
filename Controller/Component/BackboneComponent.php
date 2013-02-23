@@ -6,7 +6,6 @@ App::uses('Inflector', 'Utility');
  *	A compoonent to make sure JSON gets returned in the way that backbone likes it
  */
 Class BackboneComponent extends Component {
-	
 	private $_backbone = false;
 
 	/*
@@ -46,6 +45,58 @@ Class BackboneComponent extends Component {
 		$singular = Inflector::singularize($controllerName);
 		$modelName = Inflector::camelize($singular);
 		switch ($action) {
+			case 'index': 
+				$param = $controllerName;
+				break;
+			case 'add':
+				$param = $singular;
+				break;
+			case 'edit':
+				$param = $singular;
+				break;
+			case 'delete':
+				return;
+				break;
+			case 'view':
+				$object = $singular;
+				break;
+		}
+		if (!isset($object) && isset($param)) {
+			if (isset($controller->viewVars[$param][0][$modelName])) {
+				$object = array_map(function($row) use ($modelName) {
+					return $row[$modelName];
+				}, $controller->viewVars[$param]);
+				$controller->set('object', $object);
+			}
+			elseif (isset($controller->viewVars[$param][$modelName])) {
+				$object = $controller->viewVars[$param][$modelName];
+				$controller->set('object', $object);
+
+			} else {
+				$object = $controller->viewVars[$param];
+				$controller->set('object', $object);
+			}
+		} elseif(isset($object)) {
+			$controller->set('object', $object);
+		}
+
+		// respond as application/json in the headers
+		$controller->RequestHandler->respondAs('json');
+		$callback = $this->_hasCallback($controller);
+		if ($callback) {
+			$controller->autoRender = false;
+			echo $callback."(".json_encode($object).");";
+		}
+	}
+
+	public function prepareBeforeRender(Controller $controller, $actionType) {
+		if (!$controller->RequestHandler->isAjax() && !$this->_isJsonRequest($controller)) {
+			return;
+		}
+		$controllerName = $controller->request->params['controller'];
+		$singular = Inflector::singularize($controllerName);
+		$modelName = Inflector::camelize($singular);
+		switch ($actionType) {
 			case 'index': 
 				$param = $controllerName;
 				break;

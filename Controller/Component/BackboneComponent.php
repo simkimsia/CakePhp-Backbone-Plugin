@@ -61,6 +61,7 @@ Class BackboneComponent extends Component {
 				$object = $singular;
 				break;
 		}
+		$paging = array();
 		if (!isset($object) && isset($param)) {
 			if (isset($controller->viewVars[$param][0][$modelName])) {
 				$object = array_map(function($row) use ($modelName) {
@@ -80,12 +81,22 @@ Class BackboneComponent extends Component {
 			$controller->set('object', $object);
 		}
 
+		if (isset($controller->request['paging'][$modelName])) {
+			$paging = $controller->request['paging'][$modelName];
+			$controller->set('paging', $paging);
+		}
+
 		// respond as application/json in the headers
 		$controller->RequestHandler->respondAs('json');
 		$callback = $this->_hasCallback($controller);
 		if ($callback) {
+			if (!empty($paging)) {
+				$data = array('paging' => $paging, 'data' => $object);
+			} else {
+				$data = $object;
+			}
 			$controller->autoRender = false;
-			echo $callback."(".json_encode($object).");";
+			echo $callback."(".json_encode($data).");";
 		}
 	}
 

@@ -18,7 +18,7 @@ Class BackboneComponent extends Component {
 		if (!$controller->RequestHandler->isAjax() && !$this->_isJsonRequest($controller)) {
 			return;
 		}
-		$controller->view = 'Backbone./Backbone/json';
+		$controller->view = 'CakephpBackbone./Backbone/json';
 	}
 
 	protected function _isJsonRequest(Controller $controller) {

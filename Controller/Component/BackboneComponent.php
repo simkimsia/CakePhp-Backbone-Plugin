@@ -65,6 +65,11 @@ Class BackboneComponent extends Component {
 		if (!isset($object) && isset($param)) {
 			if (isset($controller->viewVars[$param][0][$modelName])) {
 				$object = array_map(function($row) use ($modelName) {
+					foreach($row as $index => $value) {
+						if ($index != $modelName) {
+							$row[$modelName][$index] = $value;
+						}
+					}
 					return $row[$modelName];
 				}, $controller->viewVars[$param]);
 				$controller->set('object', $object);

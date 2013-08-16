@@ -75,7 +75,13 @@ Class BackboneComponent extends Component {
 				$controller->set('object', $object);
 			}
 			elseif (isset($controller->viewVars[$param][$modelName])) {
-				$object = $controller->viewVars[$param][$modelName];
+				$singleRecordData = $controller->viewVars[$param];
+				foreach($singleRecordData as $index => $value) {
+					if ($index != $modelName) {
+						$singleRecordData[$modelName][$index] = $value;
+					}
+				}
+				$object = $singleRecordData[$modelName];
 				$controller->set('object', $object);
 
 			} else {

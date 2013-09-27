@@ -15,7 +15,7 @@ Class BackboneComponent extends Component {
  * @return void
  */
 	public function startup(Controller $controller) {
-		if (!$controller->RequestHandler->isAjax() && !$this->_isJsonRequest($controller)) {
+		if (!$controller->request->is('ajax') && !$this->_isJsonRequest($controller)) {
 			return;
 		}
 		$controller->view = 'CakephpBackbone./Backbone/json';
@@ -37,11 +37,11 @@ Class BackboneComponent extends Component {
  * @return void
  */
 	public function beforeRender(Controller $controller) {
-		if (!$controller->RequestHandler->isAjax() && !$this->_isJsonRequest($controller)) {
+		if (!$controller->request->is('ajax') && !$this->_isJsonRequest($controller)) {
 			return;
 		}
 
-		$this->_prepareData($controller, '', $paging, $object);
+		$this->_prepareData($controller, array(), $paging, $object);
 
 		// respond as application/json in the headers
 		$controller->RequestHandler->respondAs('json');
@@ -65,12 +65,12 @@ Class BackboneComponent extends Component {
  * @param $controller object The controller object
  * @return void
  */
-	public function customizeBeforeRender(Controller $controller, $action) {
-		if (!$controller->RequestHandler->isAjax() && !$this->_isJsonRequest($controller)) {
+	public function customizeBeforeRender(Controller $controller, $options = array()) {
+		if (!$controller->request->is('ajax') && !$this->_isJsonRequest($controller)) {
 			return;
 		}
 
-		$this->_prepareData($controller, $action, $paging, $object);
+		$this->_prepareData($controller, $options, $paging, $object);
 
 		// respond as application/json in the headers
 		$controller->RequestHandler->respondAs('json');
@@ -95,11 +95,13 @@ Class BackboneComponent extends Component {
  * @param &$paging Pass-by-reference Paging array
  * @param &$object Pass-by-reference the data array
  */
-	protected function _prepareData(Controller $controller, $similarActionType = '', &$paging, &$object) {
-		$controllerName = $controller->request->params['controller'];
-		$singular = Inflector::singularize($controllerName);
-		$action = (empty($similarActionType)) ? $controller->request->params['action'] : $similarActionType;
-		$modelName = Inflector::camelize($singular);
+	protected function _prepareData(Controller $controller, $options = array(), &$paging, &$object) {
+		$defaultOptions	= array('action' => '', 'controller' => '');
+		$options		= array_merge($defaultOptions, $options);
+		$controllerName	= (empty($options['controller'])) ? $controller->request->params['controller'] : $options['controller'];
+		$singular		= Inflector::singularize($controllerName);
+		$action			= (empty($options['action'])) ? $controller->request->params['action'] : $options['action'];
+		$modelName		= Inflector::camelize($singular);
 		switch ($action) {
 			case 'index': 
 				$param = $controllerName;
